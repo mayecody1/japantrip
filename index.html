@@ -365,8 +365,8 @@ function buildAddForm(containerEl, triggerLabel, onAdd){
    HOTELS PAGE
    ========================================================= */
 const HOTELS_SEED = [
-  { id:'hotel-tokyo', name:'Tokyo Hotel', note:'Tap edit to fill in the real name, address, and confirmation info.', address:'' },
-  { id:'hotel-osaka', name:'Osaka Hotel', note:'Tap edit to fill in the real name, address, and confirmation info.', address:'' }
+  { id:'hotel-tokyo', name:'Hotel Tavinos Hamamatsucho (ホテルタビノス浜松町)', note:'Check-in 3:00 PM, check-out 11:00 AM.', address:'1 Chome-13-3 Kaigan, Minato City, Tokyo 105-0022, Japan' },
+  { id:'hotel-osaka', name:'Hotel Brighton City Osaka Kitahama (ホテルブライトンシティ大阪北浜)', note:'Check-in 3:00 PM, check-out 11:00 AM.', address:'1 Chome-1 Fushimimachi, Chuo Ward, Osaka, 541-0044, Japan' }
 ];
 const hotelsListEl = document.getElementById('hotelsList');
 
@@ -458,6 +458,7 @@ const SEED_SECTIONS = {
     { id:'shinjuku', name:'Shinjuku — Omoide Yokocho / Golden Gai', note:'Evening walk, neon alleys.', address:'Omoide Yokocho, Shinjuku City, Tokyo' }
   ]}],
   4: [{ id:'s1', title:'Primary Plan', spots:[
+    { id:'shinkansen-kyoto', name:'Shinkansen to Kyoto — NOZOMI 5', note:'Fri 8/28, 6:33 AM–8:45 AM. Car 4, Seats 4-A/B/C.', address:'Tokyo Station, Chiyoda City, Tokyo' },
     { id:'fushimi-day', name:'Fushimi Inari Taisha (day)', note:'Go early to beat the crowds before your night return.', address:'68 Fukakusa Yabunouchicho, Fushimi Ward, Kyoto 612-0882' },
     { id:'kiyomizu', name:'Kiyomizu-dera / Gion', note:'Classic Kyoto day, swap for whatever you two locked in.', address:'1 Chome-294 Kiyomizu, Higashiyama Ward, Kyoto' },
     { id:'osaka-dropoff', name:'Drop cousin and wife in Osaka', note:'Hop back on the Keihan line toward Fushimi Inari.', address:'' },
@@ -467,7 +468,8 @@ const SEED_SECTIONS = {
     { id:'dotonbori', name:'Dotonbori', note:'Glico sign, canal walk, street food.', address:'Dotonbori, Chuo Ward, Osaka' },
     { id:'shinsaibashi-parco', name:'Shinsaibashi PARCO', note:'Capcom Store Osaka, Nintendo, Pokemon Center, 6th floor.', address:'1 Chome-8-3 Shinsaibashisuji, Chuo Ward, Osaka 542-0085' },
     { id:'kirby-osaka', name:'Kirby Cafe & Store Osaka', note:'9F Daimaru Shinsaibashi. Store is walk-in, cafe needs a reservation booked in advance.', address:'1-7-1 Shinsaibashisuji, Chuo-ku, Osaka' },
-    { id:'namba', name:'Namba', note:'Night walk, neon.', address:'Namba, Chuo Ward, Osaka' }
+    { id:'namba', name:'Namba', note:'Night walk, neon.', address:'Namba, Chuo Ward, Osaka' },
+    { id:'shinkansen-return', name:'Shinkansen back to Tokyo — NOZOMI 62', note:'Sat 8/29, 9:06 PM–11:32 PM. Car 4, Seats 19-A/B/C. Confirms you are back in Tokyo that night, no second Osaka hotel night needed.', address:'Shin-Osaka Station, Osaka' }
   ]}],
   6: [{ id:'s1', title:'Primary Plan', spots:[
     { id:'mh-bar', name:'Monster Hunter Bar (Hunters Bar)', note:'3F Pasela Resorts Akiba, book ahead, 2-hr table limit.', address:'1-1-10 Sotokanda, Chiyoda City, Tokyo 101-0021' },
