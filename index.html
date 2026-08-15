@@ -7,8 +7,6 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#bc002d">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -190,87 +188,17 @@
 </div>
 
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyCSW2sK381qM4Uh9k9us17M6pQwBJcR-BM",
-  authDomain: "japan-trip-2026-legod.firebaseapp.com",
-  projectId: "japan-trip-2026-legod",
-  storageBucket: "japan-trip-2026-legod.firebasestorage.app",
-  messagingSenderId: "310847158928",
-  appId: "1:310847158928:web:338a793b32fcae78527615"
-};
-let firebaseOK = true;
-let db, tripDocRef;
-try{
-  if(typeof firebase === 'undefined') throw new Error('Firebase SDK did not load');
-  firebase.initializeApp(firebaseConfig);
-  db = firebase.firestore();
-  tripDocRef = db.collection('trips').doc('japan2026');
-}catch(e){
-  firebaseOK = false;
-}
-
-let remoteData = {};
-let currentPage = 'hotels';
-let currentDayIdx = 0;
-
 const STORAGE = {
   async get(key){
-    if(firebaseOK){
-      if(Object.prototype.hasOwnProperty.call(remoteData, key)) return { value: remoteData[key] };
-      throw new Error('not found');
-    }
     const v = localStorage.getItem(key);
     if(v === null) throw new Error('not found');
     return { value: v };
   },
   async set(key, value){
-    if(firebaseOK){
-      remoteData[key] = value;
-      try{ await tripDocRef.set({ data: { [key]: value } }, { merge: true }); }catch(e){}
-    } else {
-      localStorage.setItem(key, value);
-    }
+    localStorage.setItem(key, value);
     return { value };
   }
 };
-
-function showSyncWarning(){
-  const banner = document.createElement('div');
-  banner.style.cssText = 'background:#fdf1f2;border:1px solid var(--red);color:var(--red);border-radius:8px;padding:10px 12px;font-size:12.5px;margin-bottom:14px;line-height:1.4;';
-  banner.textContent = 'Running in offline/unsynced mode — the shared connection was blocked (often an ad blocker or privacy browser setting). Your edits are only saving on this device. Try disabling content blockers for this site and reloading.';
-  document.querySelector('.wrap').insertBefore(banner, document.querySelector('.page-toggle'));
-}
-
-async function rerenderCurrent(){
-  if(currentPage === 'hotels'){
-    renderHotels();
-  } else if(currentPage === 'itinerary'){
-    const panel = document.querySelectorAll('.panel')[currentDayIdx];
-    if(panel) renderDayPanel(panel, currentDayIdx);
-  } else if(currentPage === 'places'){
-    categories = await getStore('places:categories', DEFAULT_CATEGORIES);
-    renderCatTabs();
-    renderCatPanel();
-  }
-}
-
-async function initFirebase(){
-  if(!firebaseOK){ showSyncWarning(); return; }
-  try{
-    const snap = await tripDocRef.get();
-    remoteData = (snap.exists && snap.data().data) ? snap.data().data : {};
-    if(!snap.exists){ await tripDocRef.set({ data: {} }); }
-    tripDocRef.onSnapshot(snap => {
-      if(snap.metadata.hasPendingWrites) return;
-      remoteData = (snap.exists && snap.data().data) ? snap.data().data : {};
-      rerenderCurrent();
-    });
-  }catch(e){
-    firebaseOK = false;
-    remoteData = {};
-    showSyncWarning();
-  }
-}
 function uid(){ return 'id_' + Math.random().toString(36).slice(2, 10); }
 function slugify(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'') || uid(); }
 
@@ -297,7 +225,6 @@ document.querySelectorAll('.page-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.page-btn').forEach(b => b.classList.toggle('active', b===btn));
     const target = btn.dataset.page;
-    currentPage = target;
     document.getElementById('page-hotels').classList.toggle('active', target==='hotels');
     document.getElementById('page-itinerary').classList.toggle('active', target==='itinerary');
     document.getElementById('page-places').classList.toggle('active', target==='places');
@@ -368,15 +295,12 @@ function buildEditableCard(item, opts){
     const bottom = document.createElement('div');
     bottom.className = 'spot-bottom';
     if(hasAddr){
-      const a = document.createElement('button');
+      const a = document.createElement('a');
       a.className = 'maps-btn';
+      a.href = mapsUrl(item.name, item.address);
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
       a.textContent = '↳ Get Directions';
-      a.addEventListener('click', (e) => {
-        e.preventDefault();
-        const url = mapsUrl(item.name, item.address);
-        const win = window.open(url, '_blank', 'noopener,noreferrer');
-        if(!win){ window.location.href = url; }
-      });
       bottom.appendChild(a);
     }
     div.appendChild(bottom);
@@ -702,7 +626,6 @@ DAYS_META.forEach((day, idx) => {
 });
 
 function selectDay(idx){
-  currentDayIdx = idx;
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active', i===idx));
   document.querySelectorAll('.panel').forEach((p,i)=>p.classList.toggle('active', i===idx));
 }
@@ -874,8 +797,6 @@ async function renderCatPanel(){
 }
 
 async function boot(){
-  await initFirebase();
-
   renderHotels();
 
   for(let i = 0; i < dayPanels.length; i++){
