@@ -49,6 +49,14 @@
   }
   .page-btn.active{background:var(--red); color:#fff;}
 
+  .sub-toggle{display:flex; gap:6px; margin-bottom:12px; background:var(--red-tint); border:1px solid var(--line); border-radius:10px; padding:4px;}
+  .sub-btn{
+    flex:1; text-align:center; padding:9px 6px; border-radius:7px; cursor:pointer;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--ink-muted); transition:background .15s ease, color .15s ease;
+  }
+  .sub-btn.active{background:var(--red); color:#fff;}
+
   .page{display:none;}
   .page.active{display:block;}
 
@@ -124,6 +132,26 @@
   .edit-card .row button{flex:1;}
   .btn-primary{background:var(--red); border:none; color:#fff; font-weight:700; font-size:13px; padding:9px; border-radius:6px; cursor:pointer;}
   .btn-ghost{background:transparent; border:1px solid var(--line); color:var(--ink-muted); font-size:13px; padding:9px; border-radius:6px; cursor:pointer;}
+  .places-search{
+    width:100%; background:#fff; border:1px solid var(--line); border-radius:20px;
+    color:var(--ink); font-family:'Zen Kaku Gothic New',sans-serif; font-size:14px;
+    padding:10px 16px; margin-bottom:12px;
+  }
+  .places-search::placeholder{ color:var(--ink-faint); }
+  .currency-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint);
+    text-transform:uppercase; letter-spacing:.08em;
+  }
+  .currency-input{
+    width:100%; background:#fff; border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:24px;
+    padding:12px 14px; margin-top:6px;
+  }
+  .currency-input::placeholder{ color:var(--ink-faint); font-weight:400; }
+  .place-cat-badge{
+    font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-faint);
+    margin:2px 2px 4px; text-transform:uppercase; letter-spacing:.08em;
+  }
   .add-trigger{
     width:100%; background:transparent; border:1px dashed var(--line); color:var(--ink-muted);
     border-radius:10px; padding:12px; font-size:13px; cursor:pointer; margin-bottom:14px; font-family:'Zen Kaku Gothic New',sans-serif;
@@ -148,12 +176,42 @@
   </div>
 
   <div class="page-toggle">
-    <div class="page-btn active" data-page="hotels">Hotels</div>
+    <div class="page-btn active" data-page="currency">Currency</div>
+    <div class="page-btn" data-page="hotels">Hotels</div>
     <div class="page-btn" data-page="itinerary">Itinerary</div>
     <div class="page-btn" data-page="places">Places</div>
+    <div class="page-btn" data-page="souvenirs">Souvenirs</div>
+    <div class="page-btn" data-page="phrases">Phrases</div>
   </div>
 
-  <div class="page active" id="page-hotels">
+  <div class="page active" id="page-currency">
+    <div class="spot" style="border-left:3px solid var(--red);">
+      <div class="spot-name">Exchange Rate</div>
+      <div class="spot-note" id="currencyRateDisplay">Loading...</div>
+      <div class="spot-bottom" style="margin-top:11px; gap:8px;">
+        <button class="maps-btn" id="refreshRateBtn">&#8635; Refresh Rate</button>
+        <button class="icon-btn" id="editRateBtn">edit rate</button>
+      </div>
+    </div>
+
+    <div class="edit-card" id="editRateForm" style="display:none;">
+      <input type="number" id="manualRateInput" placeholder="e.g. 158.70" step="0.01">
+      <div class="row">
+        <button class="btn-primary" id="saveRateBtn">Save</button>
+        <button class="btn-ghost" id="cancelRateBtn">Cancel</button>
+      </div>
+    </div>
+
+    <div style="margin-top:20px;">
+      <label class="currency-label">Yen (&#165;)</label>
+      <input type="number" id="yenInput" placeholder="0" class="currency-input" inputmode="decimal">
+
+      <label class="currency-label" style="margin-top:16px; display:block;">US Dollars ($)</label>
+      <input type="number" id="usdInput" placeholder="0" class="currency-input" inputmode="decimal">
+    </div>
+  </div>
+
+  <div class="page" id="page-hotels">
     <div id="hotelsList"></div>
     <button class="add-trigger" id="hotelAddTrigger">+ Add a hotel</button>
     <div class="edit-card" id="hotelAddForm" style="display:none;">
@@ -173,7 +231,13 @@
   </div>
 
   <div class="page" id="page-places">
+    <input type="text" id="placesSearch" placeholder="Search all places by name, area, or note..." class="places-search">
+    <div class="sub-toggle" id="placesModeToggle">
+      <div class="sub-btn active" id="modeCategoryBtn">By Category</div>
+      <div class="sub-btn" id="modeDistrictBtn">By District</div>
+    </div>
     <div class="cat-tabs" id="catTabs"></div>
+    <div class="cat-tabs" id="districtTabs" style="display:none;"></div>
     <div class="edit-card" id="catAddForm" style="display:none;">
       <input type="text" placeholder="Category name (emoji ok, e.g. Cameras)" data-cat-name>
       <div class="row">
@@ -182,6 +246,30 @@
       </div>
     </div>
     <div id="catPanels"></div>
+  </div>
+
+  <div class="page" id="page-souvenirs">
+    <div class="cat-tabs" id="souvCatTabs"></div>
+    <div class="edit-card" id="souvCatAddForm" style="display:none;">
+      <input type="text" placeholder="Person's name (emoji ok)" data-souvcat-name>
+      <div class="row">
+        <button class="btn-primary" data-souvcat-save>Add Person</button>
+        <button class="btn-ghost" data-souvcat-cancel>Cancel</button>
+      </div>
+    </div>
+    <div id="souvCatPanels"></div>
+  </div>
+
+  <div class="page" id="page-phrases">
+    <div class="cat-tabs" id="phraseCatTabs"></div>
+    <div class="edit-card" id="phraseCatAddForm" style="display:none;">
+      <input type="text" placeholder="Category name" data-phrasecat-name>
+      <div class="row">
+        <button class="btn-primary" data-phrasecat-save>Add Category</button>
+        <button class="btn-ghost" data-phrasecat-cancel>Cancel</button>
+      </div>
+    </div>
+    <div id="phraseCatPanels"></div>
   </div>
 
   <footer>拾 EVERYTHING HERE IS EDITABLE — SAVED ON THIS DEVICE 拾</footer>
@@ -216,7 +304,7 @@ async function setStore(key, value){
   try{ await STORAGE.set(key, JSON.stringify(value), false); }catch(e){}
 }
 function mapsUrl(name, address){
-  const q = address ? (name + ", " + address) : name;
+  const q = address ? address : name;
   return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
 }
 
@@ -225,9 +313,12 @@ document.querySelectorAll('.page-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.page-btn').forEach(b => b.classList.toggle('active', b===btn));
     const target = btn.dataset.page;
+    document.getElementById('page-currency').classList.toggle('active', target==='currency');
     document.getElementById('page-hotels').classList.toggle('active', target==='hotels');
     document.getElementById('page-itinerary').classList.toggle('active', target==='itinerary');
     document.getElementById('page-places').classList.toggle('active', target==='places');
+    document.getElementById('page-souvenirs').classList.toggle('active', target==='souvenirs');
+    document.getElementById('page-phrases').classList.toggle('active', target==='phrases');
   });
 });
 
@@ -265,7 +356,8 @@ function buildEditableCard(item, opts){
       stampBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 12.5 L10 18 L20 6"/></svg>';
       stampBtn.addEventListener('click', () => opts.onToggleStamp());
       top.appendChild(stampBtn);
-    } else {
+    }
+    if(!opts.showStamp || opts.showEdit){
       const editBtn = document.createElement('button');
       editBtn.className = 'icon-btn'; editBtn.textContent = 'edit';
       editBtn.addEventListener('click', renderEdit);
@@ -287,23 +379,25 @@ function buildEditableCard(item, opts){
     }
     div.appendChild(top);
 
-    const addrEl = document.createElement('div');
-    addrEl.className = 'spot-addr' + (hasAddr ? '' : ' no-addr');
-    addrEl.textContent = hasAddr ? item.address : 'address TBD';
-    div.appendChild(addrEl);
+    if(!opts.noAddress){
+      const addrEl = document.createElement('div');
+      addrEl.className = 'spot-addr' + (hasAddr ? '' : ' no-addr');
+      addrEl.textContent = hasAddr ? item.address : 'address TBD';
+      div.appendChild(addrEl);
 
-    const bottom = document.createElement('div');
-    bottom.className = 'spot-bottom';
-    if(hasAddr){
-      const a = document.createElement('a');
-      a.className = 'maps-btn';
-      a.href = mapsUrl(item.name, item.address);
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.textContent = '↳ Get Directions';
-      bottom.appendChild(a);
+      const bottom = document.createElement('div');
+      bottom.className = 'spot-bottom';
+      if(hasAddr){
+        const a = document.createElement('a');
+        a.className = 'maps-btn';
+        a.href = mapsUrl(item.name, item.address);
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = '↳ Get Directions';
+        bottom.appendChild(a);
+      }
+      div.appendChild(bottom);
     }
-    div.appendChild(bottom);
   }
 
   function renderEdit(){
@@ -313,7 +407,9 @@ function buildEditableCard(item, opts){
     const nameI = document.createElement('input'); nameI.type='text'; nameI.value=item.name; nameI.placeholder='Name';
     const addrI = document.createElement('input'); addrI.type='text'; addrI.value=item.address||''; addrI.placeholder='Address';
     const noteI = document.createElement('textarea'); noteI.value=item.note||''; noteI.placeholder='Note';
-    div.appendChild(nameI); div.appendChild(addrI); div.appendChild(noteI);
+    div.appendChild(nameI);
+    if(!opts.noAddress) div.appendChild(addrI);
+    div.appendChild(noteI);
     const row = document.createElement('div'); row.className='row';
     const saveBtn = document.createElement('button'); saveBtn.className='btn-primary'; saveBtn.textContent='Save';
     const cancelBtn = document.createElement('button'); cancelBtn.className='btn-ghost'; cancelBtn.textContent='Cancel';
@@ -322,7 +418,7 @@ function buildEditableCard(item, opts){
     saveBtn.addEventListener('click', () => {
       const name = nameI.value.trim();
       if(!name) return;
-      item.name = name; item.address = addrI.value.trim(); item.note = noteI.value.trim();
+      item.name = name; item.address = opts.noAddress ? (item.address||'') : addrI.value.trim(); item.note = noteI.value.trim();
       opts.onSave({ name: item.name, address: item.address, note: item.note });
       div.classList.remove('edit-card'); div.style.borderLeft='';
       renderView();
@@ -425,12 +521,12 @@ const DAYS_META = [
   { dow:'TUE', date:'8/25', city:'Arrival — No Plans' },
   { dow:'WED', date:'8/26', city:'Ginza / Akihabara' },
   { dow:'THU', date:'8/27', city:'Shibuya / Shinjuku' },
-  { dow:'FRI', date:'8/28', city:'Kyoto to Osaka' },
+  { dow:'FRI', date:'8/28', city:'Kyoto' },
   { dow:'SAT', date:'8/29', city:'Osaka' },
   { dow:'SUN', date:'8/30', city:'Tokyo — Birthday' },
-  { dow:'MON', date:'8/31', city:'Open — Flex Day', flexNote:'Nothing locked in yet. Earlier planning held this as the Fuji attempt / weather-dependent day.' },
-  { dow:'TUE', date:'9/1', city:'Starbucks Reserve Roastery' },
-  { dow:'WED', date:'9/2', city:'Open — Cleanup Day', flexNote:'Nothing locked in yet — earlier planning held this as a catch-all: souvenirs, anything missed, packing.' },
+  { dow:'MON', date:'8/31', city:'Open — Flex Day' },
+  { dow:'TUE', date:'9/1', city:'Open — Flex Day' },
+  { dow:'WED', date:'9/2', city:'Open — Flex Day' },
   { dow:'THU', date:'9/3', city:'Departure' }
 ];
 
@@ -439,74 +535,79 @@ const SEED_SECTIONS = {
     { id:'bwi', name:'BWI Airport', note:'Check in, fly out toward Tokyo.', address:'Baltimore/Washington International Thurgood Marshall Airport' }
   ]}],
   1: [{ id:'s1', title:'Settle In', spots:[
-    { id:'airport-arrive', name:'Narita / Haneda Airport', note:'Land, grab Suica, exchange cash.', address:'' },
-    { id:'hotel-checkin', name:'Hotel', note:'Drop bags. Wander wherever your feet take you, sleep at a normal hour.', address:'' }
+    { id:'airport-arrive', name:'Haneda Airport (Terminal 3)', note:'Land, get yen, get metro/IC card.', address:'2-6-5 Haneda Kuko, Ota City, Tokyo 144-0041, Japan' },
+    { id:'hotel-checkin', name:'Hotel Tavinos Hamamatsucho', note:'Drop bags, grab konbini snacks from downstairs and then chill in rooms for a bit.', address:'1 Chome-13-3 Kaigan, Minato City, Tokyo 105-0022, Japan' },
+    { id:'blue-front-shibaura', name:'Blue Front Shibaura South Tower', note:'Konbini merch store.', address:'1 Chome-1-1 Shibaura, Minato City, Tokyo 105-0023, Japan' },
+    { id:'pizza-hut-shiba', name:'Pizza Hut Shiba 4-Chome Branch', note:'', address:'4 Chome-10-5 Shiba, Minato City, Star Companies Building 1F, Tokyo 108-0014, Japan' }
   ]}],
   2: [
-    { id:'s1', title:'Primary Plan', spots:[
-      { id:'ginza', name:'Ginza', note:'Flagship shopping strip, main crossing.', address:'Ginza, Chuo City, Tokyo' },
-      { id:'akiba', name:'Akihabara Electric Town', note:'Mandarake, card shops, gachapon halls.', address:'Akihabara Station, Chiyoda City, Tokyo' }
-    ]},
-    { id:'s2', title:'Backup / If Time', spots:[
-      { id:'kanda-myojin', name:'Kanda Myojin Shrine', note:'5 min from Akiba, good detour if you need a breather from the crowds.', address:'2 Chome-16-2 Sotokanda, Chiyoda City, Tokyo' }
+    { id:'s1', title:'Primary Plan (north to south, working back toward the hotel)', spots:[
+      { id:'matsukiyo-akiba', name:'Matsumoto Kiyoshi (Akihabara Suehirocho)', note:'Look for: Shiseido Clear Stick UV Protector (WetForce) SPF50+. Also carries Anessa Perfect UV Skincare Milk if you want the lotion too. Maybe grab a compact umbrella here too. 1 min from Akihabara Electric Town exit.', address:'3-16-15 Sotokanda, Chiyoda City, Tokyo 101-0021, Japan' },
+      { id:'kanda-myojin', name:'Kanda Myojin Shrine', note:'Get the IT charms here.', address:'2 Chome-16-2 Sotokanda, Chiyoda City, Tokyo' },
+      { id:'akiba', name:'Akihabara Electric Town', note:'Mandarake, card shops, gachapon halls.', address:'Akihabara Station, Chiyoda City, Tokyo' },
+      { id:'ginza', name:'Ginza', note:'Flagship shopping strip, main crossing.', address:'Ginza, Chuo City, Tokyo' }
     ]}
   ],
-  3: [{ id:'s1', title:'Primary Plan', spots:[
-    { id:'shibuya-crossing', name:'Shibuya Scramble Crossing', note:'The crossing plus backstreets for shooting.', address:'Shibuya Crossing, Shibuya City, Tokyo' },
-    { id:'capcom-shibuya', name:'Capcom Store Tokyo (Shibuya)', note:'6F Shibuya PARCO, Monster Hunter and Street Fighter merch, next to Pokemon Center/Nintendo.', address:'15-1 Udagawacho, Shibuya PARCO 6F, Shibuya, Tokyo 150-0042' },
-    { id:'capcom-ikebukuro', name:'Capcom Store Ikebukuro', note:'B2F Ikebukuro PARCO, the second Tokyo location. Budget train time from Shibuya.', address:'1 Chome-28-2 Minamiikebukuro, Ikebukuro PARCO Main Building B2F, Toshima City, Tokyo 171-0022' },
-    { id:'shinjuku', name:'Shinjuku — Omoide Yokocho / Golden Gai', note:'Evening walk, neon alleys.', address:'Omoide Yokocho, Shinjuku City, Tokyo' }
-  ]}],
-  4: [{ id:'s1', title:'Primary Plan', spots:[
-    { id:'shinkansen-kyoto', name:'Shinkansen to Kyoto — NOZOMI 5', note:'Fri 8/28, 6:33 AM–8:45 AM. Car 4, Seats 4-A/B/C.', address:'Tokyo Station, Chiyoda City, Tokyo' },
-    { id:'fushimi-day', name:'Fushimi Inari Taisha (day)', note:'Go early to beat the crowds before your night return.', address:'68 Fukakusa Yabunouchicho, Fushimi Ward, Kyoto 612-0882' },
-    { id:'kiyomizu', name:'Kiyomizu-dera / Gion', note:'Classic Kyoto day, swap for whatever you two locked in.', address:'1 Chome-294 Kiyomizu, Higashiyama Ward, Kyoto' },
-    { id:'osaka-dropoff', name:'Drop cousin and wife in Osaka', note:'Hop back on the Keihan line toward Fushimi Inari.', address:'' },
-    { id:'fushimi-night', name:'Fushimi Inari Taisha (night shoot)', note:'10:50 alarm, last train back to Osaka after this.', address:'68 Fukakusa Yabunouchicho, Fushimi Ward, Kyoto 612-0882' }
-  ]}],
-  5: [{ id:'s1', title:"Primary Plan — Cousin's Day", spots:[
-    { id:'dotonbori', name:'Dotonbori', note:'Glico sign, canal walk, street food.', address:'Dotonbori, Chuo Ward, Osaka' },
-    { id:'shinsaibashi-parco', name:'Shinsaibashi PARCO', note:'Capcom Store Osaka, Nintendo, Pokemon Center, 6th floor.', address:'1 Chome-8-3 Shinsaibashisuji, Chuo Ward, Osaka 542-0085' },
-    { id:'kirby-osaka', name:'Kirby Cafe & Store Osaka', note:'9F Daimaru Shinsaibashi. Store is walk-in, cafe needs a reservation booked in advance.', address:'1-7-1 Shinsaibashisuji, Chuo-ku, Osaka' },
-    { id:'namba', name:'Namba', note:'Night walk, neon.', address:'Namba, Chuo Ward, Osaka' },
-    { id:'shinkansen-return', name:'Shinkansen back to Tokyo — NOZOMI 62', note:'Sat 8/29, 9:06 PM–11:32 PM. Car 4, Seats 19-A/B/C. Confirms you are back in Tokyo that night, no second Osaka hotel night needed.', address:'Shin-Osaka Station, Osaka' }
-  ]}],
-  6: [{ id:'s1', title:'Primary Plan', spots:[
-    { id:'mh-bar', name:'Monster Hunter Bar (Hunters Bar)', note:'3F Pasela Resorts Akiba, book ahead, 2-hr table limit.', address:'1-1-10 Sotokanda, Chiyoda City, Tokyo 101-0021' },
-    { id:'bday-dinner', name:'Birthday Dinner', note:'Gyukatsu Motomura was the earlier front-runner, confirm with cousin.', address:'' }
-  ]}],
-  7: [
-    { id:'s1', title:'Option A — Fuji Day Trip (needs clear skies)', spots:[
-      { id:'chureito', name:'Chureito Pagoda / Kawaguchiko', note:'Best with a clear morning, haze is common in late August.', address:'Chureito Pagoda, Fujiyoshida, Yamanashi' }
+  3: [
+    { id:'s1', title:'Primary Plan (north to south: Ikebukuro to Shibuya)', spots:[
+      { id:'capcom-ikebukuro', name:'Capcom Store Ikebukuro', note:'B2F Ikebukuro PARCO, the second Tokyo location.', address:'1 Chome-28-2 Minamiikebukuro, Ikebukuro PARCO Main Building B2F, Toshima City, Tokyo 171-0022' },
+      { id:'shinjuku', name:'Central Shinjuku', note:'', address:'Shinjuku Station, Shinjuku City, Tokyo' },
+      { id:'shibuya-crossing', name:'Shibuya Scramble Crossing', note:'The crossing plus backstreets for shooting.', address:'Shibuya Crossing, Shibuya City, Tokyo' },
+      { id:'capcom-shibuya', name:'Capcom Store Tokyo (Shibuya)', note:'6F Shibuya PARCO, Monster Hunter and Street Fighter merch, next to Pokemon Center/Nintendo.', address:'15-1 Udagawacho, Shibuya PARCO 6F, Shibuya, Tokyo 150-0042' }
     ]},
-    { id:'s2', title:'Option B — Kamakura + Enoshima', spots:[
-      { id:'kotokuin', name:'Kotoku-in (Great Buddha)', note:'About 1 hr from central Tokyo.', address:'4 Chome-2-28 Hase, Kamakura, Kanagawa 248-0016' },
-      { id:'enoshima', name:'Enoshima', note:'Island and shrine, good sunset shooting.', address:'Enoshima, Fujisawa, Kanagawa' }
-    ]},
-    { id:'s3', title:'Option C — Unshot Tokyo', spots:[
-      { id:'yanaka', name:'Yanaka', note:'Old-town backstreets, quieter than the big districts.', address:'Yanaka, Taito City, Tokyo' }
-    ]}
-  ],
-  8: [
-    { id:'s1', title:'Primary Plan', spots:[
-      { id:'sbux-roastery', name:'Starbucks Reserve Roastery Tokyo', note:'Nakameguro, go early, lines build up by afternoon.', address:'2-19-23 Aobadai, Meguro City, Tokyo 153-0042' }
-    ]},
-    { id:'s2', title:'Backup / If Time', spots:[
+    { id:'s2', title:'Optional', spots:[
+      { id:'sbux-roastery', name:'Starbucks Reserve Roastery Tokyo', note:'Nakameguro, go early, lines build up by afternoon. Moved here from 9/1.', address:'2-19-23 Aobadai, Meguro City, Tokyo 153-0042' },
       { id:'meguro-river', name:'Meguro River Walk', note:'Walkable from the Roastery, good for casual shooting.', address:'Meguro River, Nakameguro, Tokyo' }
     ]}
   ],
-  9: [
-    { id:'s1', title:'Option A — Souvenir Sweep', spots:[
-      { id:'donki', name:'Don Quijote', note:'Last-minute souvenir run, pick the branch closest to your hotel.', address:'Don Quijote, Tokyo' }
+  4: [
+    { id:'s1', title:'Primary Plan (west to east to south, in order)', spots:[
+      { id:'shinkansen-kyoto', name:'Shinkansen to Kyoto — NOZOMI 5', note:'Fri 8/28, 6:33 AM–8:45 AM. Car 4, Seats 4-A/B/C.', address:'1 Chome-9-1 Marunouchi, Chiyoda City, Tokyo 100-0005, Japan' },
+      { id:'kimono-forest', name:'Kimono Forest (Arashiyama)', note:'First stop, straight off the JR line from Kyoto Station (~15-20 min). Daylight visit, not lit up, so it does not compete with the Fushimi Inari night shoot later.', address:'20-2 Sagatenryuji Tsukurimichicho, Ukyo Ward, Kyoto 616-8384, Japan' },
+      { id:'higashiyama', name:'Higashiyama Historic District', note:'Old-town streets, Ninenzaka/Sannenzaka, wooden merchant buildings. Pairs naturally with Kiyomizu-dera and Gion below.', address:'Higashiyama Ward, Kyoto' },
+      { id:'kiyomizu', name:'Kiyomizu-dera / Gion', note:'Classic Kyoto stop, right in Higashiyama.', address:'1 Chome-294 Kiyomizu, Higashiyama Ward, Kyoto' },
+      { id:'kamo-river', name:'Kamo River', note:'Walkable connector between Higashiyama and central Kyoto, good for a casual photo walk.', address:'Kamo River, Kyoto, Japan' },
+      { id:'mikane-shrine', name:'Mikane Shrine', note:'Small shrine with a gleaming gold torii gate, central Nakagyo Ward.', address:'614 Oshinishitoincho, Nakagyo Ward, Kyoto 604-0932, Japan' },
+      { id:'columbia-kyoto', name:'Columbia Sportswear Kyoto Store', note:'Housed in a traditional wooden building, Aneyakoji-dori area.', address:'Aneyakoji-dori, Nakagyo Ward, Kyoto, Japan' },
+      { id:'katsukura-sanjo', name:'Katsukura Tonkatsu Sanjo Main Store', note:'Tonkatsu, free refills on cabbage/soup/pickles. Good lunch or dinner stop.', address:'16 Ishibashicho, Nakagyo Ward, Kyoto 604-8036, Japan' },
+      { id:'fushimi-night', name:'Fushimi Inari Taisha (true night shoot)', note:'Closing stop, after full dark once the crowds have cleared out. South of the city, on the way toward the Keihan line back to Osaka. Last train back after this.', address:'68 Fukakusa Yabunouchicho, Fushimi Ward, Kyoto 612-0882' },
+      { id:'keihan-to-hotel', name:'Keihan Main Line — Fushimi-Inari to Kitahama', note:'~1 hr, ~\u00a5480. Board at Fushimi-Inari Station, direct to Kitahama, then walk to the hotel. Last train is roughly 11:00-11:30 PM but Keihan is changing timetables starting 8/22/26, so confirm the exact last-train time on the Keihan app or Google Maps once you are in Japan.', address:'Fushimi-Inari Station, Fushimi Ward, Kyoto, Japan' }
     ]},
-    { id:'s2', title:'Option B — Kappabashi Kitchen Town', spots:[
-      { id:'kappabashi', name:'Kappabashi-dougu-gai', note:'Kitchen supply street, worth it for the Blackstone arsenal.', address:'Kappabashi, Taito City, Tokyo' }
-    ]},
-    { id:'s3', title:'Option C', spots:[
-      { id:'pack', name:'Pack & Repack', note:'Buffer time before the flight.', address:'' }
+    { id:'s2', title:'Optional / If Time', spots:[
+      { id:'nishiki-market', name:'Nishiki Market', note:'Skippable, not a big deal if it does not fit.', address:'Nishikikoji-dori, Nakagyo Ward, Kyoto 604-8054, Japan' }
     ]}
   ],
-  10: [{ id:'s1', title:'Today', spots:[ { id:'fly-home', name:'Fly Home', note:'', address:'' } ]}]
+  5: [
+    { id:'s1', title:'Primary Plan (in order)', spots:[
+      { id:'capcom-osaka-hq', name:'Capcom Osaka Head Office', note:'Capcom\u2019s corporate headquarters building.', address:'3-1-3 Uchihiranomachi, Chuo-ku, Osaka 540-0037, Japan' },
+      { id:'capcom-store-cafe-umeda', name:'CAPCOM Store & Cafe (Umeda)', note:'13F Daimaru Umeda. Themed merch and cafe.', address:'3 Chome-1-1 Umeda, Kita Ward, Daimaru Umeda 13F, Osaka 530-8202, Japan' },
+      { id:'capcom-parco-6f', name:'Capcom Parco 6th Floor', note:'Shinsaibashi PARCO, Capcom Store Osaka, next to Nintendo and Pokemon Center.', address:'1 Chome-7-1 Shinsaibashisuji, Chuo Ward, Osaka 542-8501, Japan' },
+      { id:'kirby-osaka', name:'Kirby Cafe & Store Osaka', note:'9F Daimaru Shinsaibashi. Store is walk-in, cafe needs a reservation booked in advance.', address:'1-7-1 Shinsaibashisuji, Chuo-ku, Osaka' },
+      { id:'glico-sign', name:'Glico Sign Dotonbori', note:'Iconic running man billboard. Head down to the boardwalk instead of the bridge for a less crowded photo angle.', address:'1 Chome-10-2 Dotonbori, Chuo Ward, Osaka 542-0071, Japan' },
+      { id:'hunters-bar-namba', name:'HUNTERS BAR in Namba (Monster Hunter Bar WEST)', note:'17:30 reservation, same time as the Tokyo one on 8/30. 4F Pasela Resorts Namba Dotonbori. Osaka-exclusive menu items.', address:'1-4-27 Dotonbori, Chuo Ward, Osaka 542-0071, Japan' }
+    ]},
+    { id:'s2', title:'Optional', spots:[
+      { id:'osaka-castle', name:'Osaka Castle \ud83c\udfef', note:'One of Japan\u2019s most famous landmarks, museum inside, good photo spot from the park grounds.', address:'1-1 Osakajo, Chuo Ward, Osaka 540-0002, Japan' }
+    ]}
+  ],
+  6: [{ id:'s1', title:'Primary Plan (in order)', spots:[
+    { id:'capcom-shibuya-bday', name:'Capcom Store Tokyo (Shibuya)', note:'First stop.', address:'15-1 Udagawacho, Shibuya PARCO 6F, Shibuya, Tokyo 150-0042' },
+    { id:'capcom-ikebukuro-bday', name:'Capcom Store Ikebukuro', note:'Second stop, north of Shinjuku.', address:'1 Chome-28-2 Minamiikebukuro, Ikebukuro PARCO Main Building B2F, Toshima City, Tokyo 171-0022' },
+    { id:'mh-bar', name:'Monster Hunter Bar (Hunters Bar)', note:'17:30 reservation. 3F Pasela Resorts Akiba, 2-hr table limit.', address:'1-1-10 Sotokanda, Chiyoda City, Tokyo 101-0021' }
+  ]}],
+  7: [
+    { id:'s1', title:'Option', spots:[
+      { id:'yanaka', name:'Yanaka', note:'Old-town backstreets, quieter than the big districts.', address:'Yanaka, Taito City, Tokyo' }
+    ]}
+  ],
+  8: [],
+  9: [
+    { id:'s1', title:'Option', spots:[
+      { id:'donki', name:'Don Quijote', note:'Last-minute souvenir run, pick the branch closest to your hotel.', address:'Don Quijote, Tokyo' },
+      { id:'kappabashi', name:'Kappabashi-dougu-gai', note:'Kitchen supply street, worth it for the Blackstone arsenal.', address:'Kappabashi, Taito City, Tokyo' }
+    ]}
+  ],
+  10: [{ id:'s1', title:'Today', spots:[ { id:'fly-home', name:'Fly Home — Tokyo (Haneda) to Chicago', note:'Thu 9/3, 10:40 AM departure - 8:40 AM arrival Chicago (crosses the International Date Line, lands same calendar day). Terminal 3 is the international terminal.', address:'2-6-5 Haneda Kuko, Ota City, Tokyo 144-0041, Japan' } ]}]
 };
 
 const tabsEl = document.getElementById('tabs');
@@ -640,58 +741,264 @@ const DEFAULT_CATEGORIES = [
   { slug:'clothes', label:'Clothes' },
   { slug:'cameras', label:'Cameras' },
   { slug:'animal-cafes', label:'Animal Cafes' },
-  { slug:'collectibles', label:'Collectibles' },
+  { slug:'video-games-anime', label:'Video Games & Anime' },
   { slug:'food', label:'Food' },
-  { slug:'other', label:'Other' }
+  { slug:'souvenir-shops', label:'Souvenir Shops' },
+  { slug:'gashapon', label:'Gashapon' },
+  { slug:'attractions', label:'Attractions' }
 ];
 
 const DEFAULT_PLACES = {
-  cameras: [
-    { id:uid(), name:'Yodobashi Camera Shinjuku West Main Store', note:'Huge multi-floor electronics store.', address:'1 Chome-11-1 Nishishinjuku, Shinjuku City, Tokyo 160-0023' },
-    { id:uid(), name:'Lemon-sha Ginza-kyokai Store', note:'Used/vintage camera specialist, repair services too.', address:'4 Chome Ginza, Chuo City, Tokyo 104-0061' },
-    { id:uid(), name:'Lemon-sha Akihabara Store', note:'Used/vintage camera shop, Akiba branch.', address:'Akihabara, Chiyoda City, Tokyo' },
-    { id:uid(), name:'Lemon-sha Shinjuku Store', note:'Used/vintage camera shop, Shinjuku branch.', address:'Shinjuku City, Tokyo' }
+  'animal-cafes': [
+    { id:uid(), name:'WAKABAYASHI Otter House', note:'Get up close with otters, feed them. Cash only, sessions can be limited to 25 min when busy.', address:'1-6-8 Jingumae, Shibuya City, Laurier Building B1F, Tokyo 150-0001, Japan' },
+    { id:uid(), name:'Hedgehog Cafe & Pet Store HARRY Harajuku', note:'Hedgehogs, hamsters, meerkats, owls, guinea pigs. 1 min from Harajuku Station.', address:'1-13-21 Jingumae, Shibuya City, Tokyo 150-0001, Japan' },
+    { id:uid(), name:'Capy Neko Cafe Kichijoji', note:'Capybara (Tawashi) plus rescue cats. Reservations recommended, sessions are small groups.', address:'1 Chome-5-10 Kichijoji Minamicho, Musashino, PLATANO Bldg 2F, Tokyo 180-0003, Japan' },
+    { id:uid(), name:'Owl Cafe Tokyo Akiba Fukurou', note:'~40 owls, 3 min from Akihabara Station. Reservation only, cash only, book ahead.', address:'67 Kanda Neribeicho, Chiyoda City, Akiba Fukurou Bldg 1F, Tokyo 101-0022, Japan' }
   ],
-  collectibles: [
-    { id:uid(), name:'Super Potato Akihabara', note:'3 floors of retro games, an Akiba institution.', address:'Akihabara, Chiyoda City, Tokyo 101-0021' },
-    { id:uid(), name:'Trader Headquarters Akihabara', note:'Games, figures, buy-back floor. Top floors are adult items.', address:'Akihabara, Chiyoda City, Tokyo' },
-    { id:uid(), name:'HARD OFF Akihabara 1st Store', note:'Thrift/used electronics and retro gear.', address:'Akihabara, Taito City, Tokyo' },
-    { id:uid(), name:'Capcom Store Ikebukuro', note:'B2F Ikebukuro PARCO, also on the Itinerary tab Thu 8/27.', address:'1 Chome-28-2 Minamiikebukuro, Ikebukuro PARCO Main Building B2F, Toshima City, Tokyo 171-0022' },
-    { id:uid(), name:"Kirby's Pupupu Market", note:'Kirby goods store near Tokyo Station.', address:'Tokyo Station area, Chuo City, Tokyo' }
+  coffee: [
+    { id:uid(), name:'Acid Coffee Tokyo', note:'Specialty coffee, deep lineup of bean varieties. 4.7 stars, closed Sundays historically, opens 8 AM.', address:'101 1 Chome-29-5 Uehara, Shibuya, Tokyo 151-0064, Japan' },
+    { id:uid(), name:'Turret Coffee Tsukiji', note:'Artsy, compact cafe with barista-made drinks, some with fancy latte art.', address:'2 Chome-12-6 Tsukiji, Chuo City, Tokyo 104-0045, Japan' },
+    { id:uid(), name:'rébon Kaisaiyu', note:'An old sento (bathhouse) converted into a cafe/library space, Mt. Fuji mural over the old bath.', address:'2 Chome-17-11 Shitaya, Taito City, Tokyo 110-0004, Japan' },
+    { id:uid(), name:'Glitch Coffee and Roasters GINZA', note:'Renowned single-origin specialty coffee, light roast focus. Expect a line.', address:'4 Chome-14-8 VORT Ginza East III 1F, Ginza, Chuo City, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'Onibus Coffee Nakameguro', note:'Popular espresso/pour-over stand, upstairs seating with a view of the train tracks.', address:'2-14-1 Kamimeguro, Meguro City, Tokyo 153-0051, Japan' },
+    { id:uid(), name:'BREWS', note:'South of the hotel. They have draft pour coffee.', address:'2 Chome-1-3 Higashishinagawa, Shinagawa City, Tokyo 140-0002, Japan' }
+  ],
+  cameras: [
+    { id:uid(), name:'Yodobashi Camera Shinjuku West Main Store', note:'Huge multi-floor electronics store, right at Shinjuku Station west exit.', address:'1 Chome-11-1 Nishishinjuku, Shinjuku City, Tokyo 160-0023, Japan' },
+    { id:uid(), name:'Lemon-sha Ginza-kyokai Store', note:'Camera store with repair services, also does event/wedding/corporate photography.', address:'4 Chome-2-1 Ginza, Chuo City, Ginza Kyoukaidou Bldg 8F, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'Popeye Camera Flagship Store', note:'Jiyugaoka, since 1936. Vintage film cameras, Polaroids, film development and printing.', address:'2 Chome-10-2 Jiyugaoka, Meguro City, Tokyo 152-0035, Japan' },
+    { id:uid(), name:'Kungfu Camera', note:'Small Koenji shop (formerly Void Lens), compact film cameras and entry-mid SLRs, tiny gallery space inside.', address:'3 Chome-2-12 Koenjikita, Suginami City, Tokyo 166-0002, Japan' }
+  ],
+  'video-games-anime': [
+    { id:uid(), name:'JUMP SHOP', note:'Shonen Jump/Weekly Jump merch, inside Tokyo Character Street in Tokyo Station.', address:'1 Chome-9-1 Marunouchi, Chiyoda City, Tokyo 100-0005, Japan' },
+    { id:uid(), name:"Kirby's Pupupu Market (Harajuku)", note:'Inside Kiddy Land Harajuku. Kirby-themed supermarket concept, exclusive items.', address:'6 Chome-1-9 Jingumae, Shibuya City, Tokyo 150-0001, Japan' },
+    { id:uid(), name:'Capcom Store Ikebukuro', note:'B2F Ikebukuro PARCO, also on the Itinerary tab Thu 8/27.', address:'1 Chome-28-2 Minamiikebukuro, Ikebukuro PARCO Main Building B2F, Toshima City, Tokyo 171-0022, Japan' },
+    { id:uid(), name:'Super Potato Akihabara', note:'3rd-5th floors, Mario-decorated building. Retro consoles and games, an Akiba institution.', address:'1-11-2 Sotokanda, Chiyoda City, Kitabayashi Building 3F-5F, Tokyo 101-0021, Japan' },
+    { id:uid(), name:'Mandarake Complex', note:'8 floors: manga, figures, toys, doujinshi, cels, antiques.', address:'3-11-12 Sotokanda, Chiyoda City, Tokyo 101-0021, Japan' },
+    { id:uid(), name:'Akihabara Radio Kaikan', note:'10-story Akiba landmark, tons of specialty tenants (figures, cards, dolls), beer hall in the basement.', address:'1-15-16 Sotokanda, Chiyoda City, Tokyo 101-0021, Japan' },
+    { id:uid(), name:'TRADER Headquarters', note:'B1-7F: buyback, games, figures, hobby. Top floors are adult items, no tax-free refunds here.', address:'4-2-1 Sotokanda, Chiyoda City, Tokyo 101-0021, Japan' },
+    { id:uid(), name:'HARD OFF Akihabara 1st Store', note:'Secondhand electronics, games, instruments, thrift-store treasure hunting.', address:'3-11-2 Sotokanda, Chiyoda City, Rock Building 2F/3F/B1, Tokyo 101-0021, Japan' }
   ],
   clothes: [
+    { id:uid(), name:'Uniqlo Ginza Flagship Store', note:'Multi-floor flagship, 1F-12F.', address:'6 Chome-9-5 Ginza, Chuo City, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'Uniqlo Tokyo', note:'Maronie Gate Ginza 2, floors 1-4.', address:'3 Chome-2-1 Ginza, Chuo City, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'The North Face Backmagic', note:'MIYASHITA PARK South 3F. Backpacks and bags focus.', address:'6 Chome-20-10 Jingumae, Shibuya City, MIYASHITA PARK South 3F, Tokyo 150-0001, Japan' },
+    { id:uid(), name:'The North Face 3(march)', note:'NA Building 1F, Jingumae.', address:'6 Chome-10-8 Jingumae, Shibuya City, Tokyo 150-0001, Japan' },
+    { id:uid(), name:'The North Face Standard', note:'Winbelle Plaza Harajuku.', address:'6 Chome-10-9 Jingumae, Shibuya City, Tokyo 150-0001, Japan' },
+    { id:uid(), name:'The North Face Sphere', note:'Central Harajuku concept store.', address:'6 Chome-10-11 Jingumae, Shibuya City, Tokyo 150-0001, Japan' },
+    { id:uid(), name:'The North Face Unlimited Ginza Six', note:'GINZA SIX 5F. Purple Label and Unlimited lines.', address:'6 Chome-10-1 Ginza, Chuo City, GINZA SIX 5F, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'The North Face PLAY', note:'Tokyo Midtown Hibiya 2F.', address:'1 Chome-1-2 Yurakucho, Chiyoda City, Tokyo Midtown Hibiya 2F, Tokyo 100-0006, Japan' },
+    { id:uid(), name:'Blue Front Shibaura South Tower', note:'South of the hotel. Mixed-use tower, 3rd floor has a konbini with a small clothes section.', address:'1 Chome-1-1 Shibaura, Minato City, Tokyo 105-0023, Japan' },
     { id:uid(), name:'Nanamica Daikanyama', note:'Purple Label North Face x Nanamica.', address:'Daikanyama, Shibuya City, Tokyo' },
     { id:uid(), name:'MUJI Ginza', note:'Flagship, huge, has a hotel and bakery attached.', address:'3 Chome-3-5 Ginza, Chuo City, Tokyo' },
     { id:uid(), name:'MUJI Tokyo Midtown', note:'Less crowded alternative to the Shinjuku stores.', address:'Tokyo Midtown, Minato City, Tokyo' },
     { id:uid(), name:'mont-bell Okachimachi Store', note:'Outdoor gear.', address:'3 Chome-22-6, Ueno, Taito City, Tokyo 110-0005' },
-    { id:uid(), name:'BEAMS Ginza', note:'Curated Japanese streetwear/select shop.', address:'Ginza, Chuo City, Tokyo' },
+    { id:uid(), name:'BEAMS Ginza', note:'Curated Japanese streetwear/select shop, 2F/3F.', address:'4 Chome-4-1 Ginza, Chuo City, Tokyo 104-0061, Japan' },
     { id:uid(), name:'BAPE Store Ginza', note:'A Bathing Ape flagship.', address:'2 Chome-6-5 Ginza, Chuo City, Tokyo 104-0061' },
-    { id:uid(), name:'BAPE Store Dover Street Market Ginza', note:'Second BAPE spot, different stock than the flagship.', address:'Ginza, Chuo City, Tokyo' },
-    { id:uid(), name:'The North Face Marunouchi', note:'', address:'1 Chome-5-1 Marunouchi, Chiyoda City, Tokyo' }
+    { id:uid(), name:'BAPE Store Dover Street Market Ginza', note:'Inside Dover Street Market Ginza, different stock than the flagship.', address:'6 Chome-9-5 Ginza, Chuo City, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'The North Face Marunouchi', note:'Shin-Marunouchi Building.', address:'1 Chome-5-1 Marunouchi, Chiyoda City, Tokyo' }
   ],
-  other: [
-    { id:uid(), name:'Don Quijote Roppongi', note:'Open 24 hours, tax-free on the 6th floor. Less crowded than the Shibuya branch.', address:'Roppongi, Minato City, Tokyo' }
+  'souvenir-shops': [
+    { id:uid(), name:'Don Quijote Roppongi', note:'Open 24 hours. Escalator to 6F for tax-free checkout. Adult toy section on 4F.', address:'3-14-10 Roppongi, Minato City, Tokyo 106-0032, Japan' },
+    { id:uid(), name:'Don Quijote Ginza Honkan', note:'Open 24 hours, in Ginza Nine #3. Suitcases on 2F if your bags get too full, tax-free checkout also on 2F.', address:'GINZA NINE 3, 8-10 Ginza, Chuo City, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'3COINS+plus Nishiginza', note:'General store, most items around 300 yen. Household goods, accessories, kids stuff.', address:'4 Chome-1 Ginza, Nishi Ginza Department 2F, Chuo City, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'Seria', note:'100 yen shop, 2F of Wing Takanawa West. Kitchen goods, stationery, small gifts.', address:'4 Chome-10-18 Takanawa, Wing Takanawa West 2F, Minato City, Tokyo 108-0074, Japan' },
+    { id:uid(), name:'B-SIDE LABEL Harajuku', note:'Sticker and vinyl decal shop, B1-B2. 4.8 stars, huge selection.', address:'4 Chome-25-6 Jingumae, B1-B2, Shibuya City, Tokyo, Japan' },
+    { id:uid(), name:'Kanda Myoujin Shrine', note:'Shinto shrine dating back 1,270 years. Also where the IT-safety charm is, and it is a backup spot on the Itinerary tab Wed 8/26.', address:'2 Chome-16-2 Sotokanda, Chiyoda City, Tokyo 101-0021, Japan' },
+    { id:uid(), name:'Kappabashi Kitchen Supply Town', note:'170+ specialty kitchenware shops, knives with custom engraving, plastic food replicas, matcha bowls, chopsticks. Closed Sundays. Already a cleanup-day option on the Itinerary tab 9/2.', address:'3 Chome-18-2 Matsugaya, Taito City, Tokyo 110-0036, Japan' }
+  ],
+  gashapon: [
+    { id:uid(), name:'Gashapon Bandai Official Shop - Akihabara', note:'Inside namco Akihabara. ~800 machines, largest gashapon count in the area, 1 min from the station.', address:'1-15-9 Sotokanda, 4F, Chiyoda City, Tokyo 101-0021, Japan' },
+    { id:uid(), name:'Akihabara Gachapon Hall', note:'Latest machines plus vintage gashapon you will not find elsewhere. Over 450 machines.', address:'3-15-5 Sotokanda, Chiyoda City, Tokyo 101-0021, Japan' },
+    { id:uid(), name:'Tokyo Gashapon Street', note:'Inside Tokyo Character Street, First Avenue Tokyo Station B1F, same building as JUMP SHOP.', address:'1-9-1 Marunouchi, Chiyoda City, Tokyo 100-0005, Japan' }
+  ],
+  food: [
+    { id:uid(), name:'Ichiran Ramen (Ueno)', note:'Open 24 hours, solo booth seating, no reservations.', address:'7 Chome-1-1 Ueno, Taito City, Tokyo 110-0005, Japan' },
+    { id:uid(), name:'Gyukatsu Motomura Shinjuku Main Branch', note:'Beef cutlet, cook it yourself on a hot stone. 4.9 stars, expect a line, this is the same one on the Itinerary tab for 8/30 birthday dinner.', address:'1-25-3 Kabukicho, WaMall Seibu Shinjuku Ekimae Building B2F, Shinjuku City, Tokyo 160-0021, Japan' },
+    { id:uid(), name:'Kura Sushi Global Flagship Ginza', note:'Conveyor belt sushi, Edo-period themed flagship, 7F of Marronnier Gate Ginza 2.', address:'3-2-1 Ginza, Marronnier Gate Ginza 2 7F, Chuo City, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'Ginkado', note:'Mochi and strawberry daifuku dessert spot near Sensoji.', address:'1 Chome-30-1 Asakusa, Taito City, Tokyo 111-0032, Japan' },
+    { id:uid(), name:'C3 TIRAMISU (Tokyo Gift Palette)', note:'Tokyo Station Yaesu North Exit 1F, two JR stops from your Hamamatsucho hotel. Same building as JUMP SHOP and Tokyo Gashapon Street, easy to combine.', address:'1-9-1 Marunouchi, Chiyoda City, Tokyo Station Yaesu North Exit 1F, Tokyo 100-0005, Japan' },
+    { id:uid(), name:'Tiramisu Labo', note:'Cup-style tiramisu, served like a takeaway coffee. 6 flavors including matcha, Oreo, strawberry. 3 min from Harajuku Station.', address:'1-15-4 Jingumae, Shibuya City, Tokyo 150-0001, Japan' },
+    { id:uid(), name:'Yanagi Chaya Asakusa', note:'Matcha and hojicha tiramisu, right near Sensoji. Gets busy 11am-2pm.', address:'1-30-6 Asakusa, Taito City, Tokyo, Japan' },
+    { id:uid(), name:'Bunmeido Cafe Ginza', note:'Matcha tiramisu, 1 min walk from Ginza Station, one JR stop from your hotel. Floor-to-ceiling glass, non-smoking, stroller-friendly.', address:'1F Nakamura Sekizenkai Building, 5-chome-7-10 Ginza, Chuo City, Tokyo 104-0061, Japan' },
+    { id:uid(), name:'GUCCI Cafe / Osteria Ginza', note:'Novelty spot, one stop from your hotel. Tiramisu with the GUCCI logo stamped on top.', address:'4-4-10 4F Ginza, Chuo City, Tokyo 104-0061, Japan' }
+  ],
+  attractions: [
+    { id:uid(), name:'Art Aquarium Museum GINZA', note:'8F of Mitsukoshi Ginza department store. Goldfish as living art, lanterns and Edo-period aesthetics.', address:'4 Chome-6-16 Ginza, Chuo City, Tokyo 104-8212, Japan' },
+    { id:uid(), name:'Sensoji Temple', note:'Tokyo\'s oldest temple, in Asakusa. 4.5 stars, extremely busy, especially near the Kaminarimon gate.', address:'2 Chome-3-1 Asakusa, Taito City, Tokyo 111-0032, Japan' },
+    { id:uid(), name:'Tsukiji Outer Market', note:'The inner wholesale market moved to Toyosu, but the outer market of food stalls and restaurants is still here and worth a wander.', address:'4 Chome Tsukiji, Chuo City, Tokyo 104-0045, Japan' },
+    { id:uid(), name:'Omoide Yokocho (Memory Lane)', note:'Narrow alley of tiny yakitori bars and izakaya near Shinjuku Station west exit.', address:'1 Chome Nishishinjuku, Shinjuku City, Tokyo 160-0023, Japan' },
+    { id:uid(), name:'Yanaka', note:'Old-town backstreets, one of the few areas that survived WWII bombing largely intact. Also a flex-day option on the Itinerary tab.', address:'Yanaka, Taito City, Tokyo 110-0001, Japan' },
+    { id:uid(), name:'Koenjikita', note:'Graffiti-heavy backstreets, covered shutters and stickered walls. Same neighborhood as Kungfu Camera, worth combining into one trip.', address:'Koenjikita, Suginami City, Tokyo 166-0002, Japan' }
   ]
 };
 
 const catTabsEl = document.getElementById('catTabs');
 const catPanelsEl = document.getElementById('catPanels');
 let categories = [];
-let selectedCatIdx = 0;
+let selectedCatSlug = null;
 
 function placesKey(slug){ return `places:${slug}`; }
 
+const DISTRICT_RULES = [
+  { label:'Harajuku', keywords:['jingumae','harajuku'] },
+  { label:'Daikanyama', keywords:['daikanyama'] },
+  { label:'Nakameguro', keywords:['nakameguro','meguro'] },
+  { label:'Shibuya', keywords:['shibuya'] },
+  { label:'Shinjuku', keywords:['shinjuku'] },
+  { label:'Ginza', keywords:['ginza'] },
+  { label:'Marunouchi / Tokyo Sta.', keywords:['marunouchi','yaesu','tokyo station'] },
+  { label:'Akihabara', keywords:['akihabara','sotokanda','akiba'] },
+  { label:'Ueno', keywords:['ueno'] },
+  { label:'Asakusa', keywords:['asakusa'] },
+  { label:'Roppongi', keywords:['roppongi'] },
+  { label:'Ikebukuro', keywords:['ikebukuro','toshima'] },
+  { label:'Yanaka', keywords:['yanaka'] },
+  { label:'Koenji', keywords:['koenji','suginami'] },
+  { label:'Jiyugaoka', keywords:['jiyugaoka'] },
+  { label:'Shinagawa / Shibaura', keywords:['shinagawa','shibaura'] },
+  { label:'Kyoto', keywords:['kyoto'] },
+  { label:'Osaka - Umeda', keywords:['umeda'] },
+  { label:'Osaka - Shinsaibashi / Namba', keywords:['shinsaibashi','dotonbori','namba'] },
+  { label:'Osaka - Other', keywords:['osaka'] }
+];
+
+function getDistrict(address){
+  if(!address) return 'No address yet';
+  const lower = address.toLowerCase();
+  for(const rule of DISTRICT_RULES){
+    if(rule.keywords.some(k => lower.includes(k))) return rule.label;
+  }
+  return 'Other';
+}
+
+function matchesSearch(place, query){
+  if(!query) return true;
+  const q = query.toLowerCase();
+  return (place.name||'').toLowerCase().includes(q) || (place.note||'').toLowerCase().includes(q) || (place.address||'').toLowerCase().includes(q);
+}
+
+async function getAllPlacesFlat(){
+  let all = [];
+  for(const cat of categories){
+    const items = await getStore(placesKey(cat.slug), DEFAULT_PLACES[cat.slug] || []);
+    items.forEach(p => all.push({ item:p, catSlug:cat.slug, catLabel:cat.label }));
+  }
+  return all;
+}
+
+let placesMode = 'category';
+let selectedDistrict = null;
+let placesSearchQuery = '';
+
+document.getElementById('placesSearch').addEventListener('input', (e) => {
+  placesSearchQuery = e.target.value;
+  if(placesMode === 'category') renderCatPanel(); else renderDistrictPanel();
+});
+
+function updatePlacesModeUI(){
+  document.getElementById('modeCategoryBtn').classList.toggle('active', placesMode==='category');
+  document.getElementById('modeDistrictBtn').classList.toggle('active', placesMode==='district');
+  document.getElementById('catTabs').style.display = placesMode==='category' ? 'flex' : 'none';
+  document.getElementById('districtTabs').style.display = placesMode==='district' ? 'flex' : 'none';
+  document.getElementById('catAddForm').style.display = 'none';
+}
+
+document.getElementById('modeCategoryBtn').addEventListener('click', () => {
+  placesMode = 'category';
+  updatePlacesModeUI();
+  renderCatTabs(); renderCatPanel();
+});
+document.getElementById('modeDistrictBtn').addEventListener('click', async () => {
+  placesMode = 'district';
+  updatePlacesModeUI();
+  await renderDistrictTabs(); renderDistrictPanel();
+});
+
+async function renderDistrictTabs(){
+  const districtTabsEl = document.getElementById('districtTabs');
+  districtTabsEl.innerHTML = '';
+  const all = await getAllPlacesFlat();
+  const districtSet = new Set(all.map(p => getDistrict(p.item.address)));
+  const districts = Array.from(districtSet).sort((a,b) => a.localeCompare(b));
+  if((selectedDistrict === null || !districts.includes(selectedDistrict)) && districts.length > 0){
+    selectedDistrict = districts[0];
+  }
+  districts.forEach(d => {
+    const tab = document.createElement('div');
+    tab.className = 'cat-tab' + (d===selectedDistrict ? ' active' : '');
+    tab.textContent = d;
+    tab.addEventListener('click', () => { selectedDistrict = d; renderDistrictTabs(); renderDistrictPanel(); });
+    districtTabsEl.appendChild(tab);
+  });
+}
+
+async function renderDistrictPanel(){
+  catPanelsEl.innerHTML = '';
+  const all = await getAllPlacesFlat();
+  const filtered = all.filter(p => getDistrict(p.item.address) === selectedDistrict && matchesSearch(p.item, placesSearchQuery));
+  const panel = document.createElement('div');
+  panel.className = 'cat-panel active';
+  const heading = document.createElement('div');
+  heading.className = 'cat-heading'; heading.style.margin = '2px 2px 16px';
+  heading.textContent = `${selectedDistrict || ''} (${filtered.length})`;
+  panel.appendChild(heading);
+
+  if(filtered.length === 0){
+    const empty = document.createElement('div'); empty.className = 'empty-state';
+    empty.textContent = placesSearchQuery ? 'No matches here.' : 'Nothing tagged to this area yet.';
+    panel.appendChild(empty);
+  } else {
+    filtered.forEach(({ item, catSlug, catLabel }) => {
+      const badge = document.createElement('div');
+      badge.className = 'place-cat-badge';
+      badge.textContent = catLabel;
+      panel.appendChild(badge);
+      panel.appendChild(buildEditableCard(item, {
+        showStamp: true,
+        showEdit: true,
+        stampOn: !!item.visited,
+        onToggleStamp: async () => {
+          const items = await getStore(placesKey(catSlug), DEFAULT_PLACES[catSlug] || []);
+          const target = items.find(i => i.id === item.id);
+          if(target){ target.visited = !target.visited; }
+          await setStore(placesKey(catSlug), items);
+          renderDistrictPanel();
+        },
+        onSave: async (fields) => {
+          const items = await getStore(placesKey(catSlug), DEFAULT_PLACES[catSlug] || []);
+          const target = items.find(i => i.id === item.id);
+          if(target) Object.assign(target, fields);
+          await setStore(placesKey(catSlug), items);
+          renderDistrictTabs();
+        },
+        onDelete: async () => {
+          const items = await getStore(placesKey(catSlug), DEFAULT_PLACES[catSlug] || []);
+          const updated = items.filter(i => i.id !== item.id);
+          await setStore(placesKey(catSlug), updated);
+          renderDistrictTabs(); renderDistrictPanel();
+        }
+      }));
+    });
+  }
+  catPanelsEl.appendChild(panel);
+}
+
 async function loadCategories(){
   categories = await getStore('places:categories', DEFAULT_CATEGORIES);
+  categories.sort((a, b) => a.label.localeCompare(b.label));
+  if(selectedCatSlug === null && categories.length > 0){
+    selectedCatSlug = categories[0].slug;
+  }
 }
 
 function renderCatTabs(){
   catTabsEl.innerHTML = '';
   categories.forEach((cat, idx) => {
     const tab = document.createElement('div');
-    tab.className = 'cat-tab' + (idx===selectedCatIdx ? ' active' : '');
+    tab.className = 'cat-tab' + (cat.slug===selectedCatSlug ? ' active' : '');
     tab.textContent = cat.label;
-    tab.addEventListener('click', () => { selectedCatIdx = idx; renderCatTabs(); renderCatPanel(); });
+    tab.addEventListener('click', () => { selectedCatSlug = cat.slug; renderCatTabs(); renderCatPanel(); });
     catTabsEl.appendChild(tab);
   });
   const addTab = document.createElement('div');
@@ -713,17 +1020,18 @@ document.querySelector('#catAddForm [data-cat-save]').addEventListener('click', 
   if(!label) return;
   const slug = slugify(label) + '-' + uid().slice(0,4);
   categories.push({ slug, label });
+  categories.sort((a, b) => a.label.localeCompare(b.label));
   await setStore('places:categories', categories);
   nameInput.value = '';
   document.getElementById('catAddForm').style.display = 'none';
-  selectedCatIdx = categories.length - 1;
+  selectedCatSlug = slug;
   renderCatTabs(); renderCatPanel();
 });
 
 async function renderCatPanel(){
   catPanelsEl.innerHTML = '';
   if(categories.length === 0) return;
-  const cat = categories[selectedCatIdx];
+  const cat = categories.find(c => c.slug === selectedCatSlug) || categories[0];
   const panel = document.createElement('div');
   panel.className = 'cat-panel active';
 
@@ -749,6 +1057,7 @@ async function renderCatPanel(){
       const val = input.value.trim();
       if(!val) return;
       cat.label = val;
+      categories.sort((a, b) => a.label.localeCompare(b.label));
       await setStore('places:categories', categories);
       renderCatTabs(); renderCatPanel();
     });
@@ -762,9 +1071,9 @@ async function renderCatPanel(){
       return;
     }
     clearTimeout(delTimer);
-    categories.splice(selectedCatIdx, 1);
+    categories = categories.filter(c => c.slug !== cat.slug);
     await setStore('places:categories', categories);
-    selectedCatIdx = 0;
+    selectedCatSlug = categories.length > 0 ? categories[0].slug : null;
     renderCatTabs(); renderCatPanel();
   });
 
@@ -772,13 +1081,22 @@ async function renderCatPanel(){
   panel.appendChild(listEl);
 
   const places = await getStore(placesKey(cat.slug), DEFAULT_PLACES[cat.slug] || []);
-  if(places.length === 0){
+  const visiblePlaces = places.filter(p => matchesSearch(p, placesSearchQuery));
+  if(visiblePlaces.length === 0){
     const empty = document.createElement('div'); empty.className='empty-state';
-    empty.textContent = 'No places here yet, add one below.';
+    empty.textContent = placesSearchQuery ? 'No matches here.' : 'No places here yet, add one below.';
     listEl.appendChild(empty);
   } else {
-    places.forEach(place => {
+    visiblePlaces.forEach(place => {
       listEl.appendChild(buildEditableCard(place, {
+        showStamp: true,
+        showEdit: true,
+        stampOn: !!place.visited,
+        onToggleStamp: async () => {
+          place.visited = !place.visited;
+          await setStore(placesKey(cat.slug), places);
+          renderCatPanel();
+        },
         onSave: async () => { await setStore(placesKey(cat.slug), places); },
         onDelete: async () => {
           const updated = places.filter(p => p.id !== place.id);
@@ -798,7 +1116,491 @@ async function renderCatPanel(){
   catPanelsEl.appendChild(panel);
 }
 
+const DEFAULT_SOUV_ITEMS = {
+  cody: [
+    { id:uid(), name:'Konbini shirt and socks', note:'1st day.', bought:false },
+    { id:uid(), name:'Pokemon Scyther', note:'Pokemon cards.', bought:false },
+    { id:uid(), name:'Anime figure', note:'Screenshots saved on phone for reference.', bought:false },
+    { id:uid(), name:'Purple Label North Face', note:'Maybe?', bought:false },
+    { id:uid(), name:'Kirby eating or ramen bowl', note:'For Amber.', bought:false },
+    { id:uid(), name:'Stickers (B-Side Label)', note:'', bought:false },
+    { id:uid(), name:'Chonky cute animal figure(s)', note:'For Amber.', bought:false },
+    { id:uid(), name:'Manatee or dugong figure', note:'For Amber.', bought:false },
+    { id:uid(), name:'R34 Skyline toy, green', note:'For Daim.', bought:false },
+    { id:uid(), name:'Shirt, hat, watch, spices', note:'For Dakota.', bought:false },
+    { id:uid(), name:'Kingdom Hearts item', note:'For Em.', bought:false },
+    { id:uid(), name:'Furin (Japanese wind chime)', note:'', bought:false },
+    { id:uid(), name:'PS1 with region lock removed + games', note:'Akiba, check for a modded/region-free unit. Games wishlist: Vigilante 8, MGS1, Tomb Raider, Spyro, Crash Bandicoot, MediEvil, Silent Hill 1, Resident Evil 2, Wipeout 2097, Hydro Thunder, Driver 2, Tekken, Street Fighter, Legacy of Kain: Soul Reaver, Parasite Eve, Silent Hill: Shattered Memories (PS2).', bought:false },
+    { id:uid(), name:'Omamori', note:'For Mia.', bought:false },
+    { id:uid(), name:'Akiba shrine IT lucky charm', note:'For Kevin, maybe x7 for everyone at work.', bought:false }
+  ],
+  julie: []
+};
+
+const DEFAULT_SOUV_CATEGORIES = [
+  { slug:'cody', label:'Cody' },
+  { slug:'josh', label:'Josh' },
+  { slug:'julie', label:'Julie' }
+];
+
+const souvCatTabsEl = document.getElementById('souvCatTabs');
+const souvCatPanelsEl = document.getElementById('souvCatPanels');
+let souvCategories = [];
+let selectedSouvCatSlug = null;
+
+function souvItemsKey(slug){ return `souv-items:${slug}`; }
+
+async function loadSouvCategories(){
+  souvCategories = await getStore('souvenirs:categories', DEFAULT_SOUV_CATEGORIES);
+  souvCategories.sort((a, b) => a.label.localeCompare(b.label));
+  if(selectedSouvCatSlug === null && souvCategories.length > 0){
+    selectedSouvCatSlug = souvCategories[0].slug;
+  }
+}
+
+function renderSouvCatTabs(){
+  souvCatTabsEl.innerHTML = '';
+  souvCategories.forEach(cat => {
+    const tab = document.createElement('div');
+    tab.className = 'cat-tab' + (cat.slug===selectedSouvCatSlug ? ' active' : '');
+    tab.textContent = cat.label;
+    tab.addEventListener('click', () => { selectedSouvCatSlug = cat.slug; renderSouvCatTabs(); renderSouvCatPanel(); });
+    souvCatTabsEl.appendChild(tab);
+  });
+  const addTab = document.createElement('div');
+  addTab.className = 'cat-tab add-new';
+  addTab.textContent = '+ New';
+  addTab.addEventListener('click', () => { document.getElementById('souvCatAddForm').style.display = 'block'; });
+  souvCatTabsEl.appendChild(addTab);
+}
+
+document.querySelector('#souvCatAddForm [data-souvcat-cancel]').addEventListener('click', () => {
+  document.getElementById('souvCatAddForm').style.display = 'none';
+  document.querySelector('#souvCatAddForm [data-souvcat-name]').value = '';
+});
+document.querySelector('#souvCatAddForm [data-souvcat-save]').addEventListener('click', async () => {
+  const nameInput = document.querySelector('#souvCatAddForm [data-souvcat-name]');
+  const label = nameInput.value.trim();
+  if(!label) return;
+  const slug = slugify(label) + '-' + uid().slice(0,4);
+  souvCategories.push({ slug, label });
+  souvCategories.sort((a, b) => a.label.localeCompare(b.label));
+  await setStore('souvenirs:categories', souvCategories);
+  nameInput.value = '';
+  document.getElementById('souvCatAddForm').style.display = 'none';
+  selectedSouvCatSlug = slug;
+  renderSouvCatTabs(); renderSouvCatPanel();
+});
+
+async function renderSouvCatPanel(){
+  souvCatPanelsEl.innerHTML = '';
+  if(souvCategories.length === 0) return;
+  const cat = souvCategories.find(c => c.slug === selectedSouvCatSlug) || souvCategories[0];
+  const panel = document.createElement('div');
+  panel.className = 'cat-panel active';
+
+  const manageRow = document.createElement('div');
+  manageRow.className = 'cat-manage';
+  const heading = document.createElement('div');
+  heading.className = 'cat-heading'; heading.textContent = cat.label;
+  const renameBtn = document.createElement('button');
+  renameBtn.className = 'icon-btn'; renameBtn.textContent = 'rename';
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'icon-btn danger'; deleteBtn.textContent = 'delete person';
+  manageRow.appendChild(heading); manageRow.appendChild(renameBtn); manageRow.appendChild(deleteBtn);
+  panel.appendChild(manageRow);
+
+  renameBtn.addEventListener('click', () => {
+    manageRow.innerHTML = '';
+    const input = document.createElement('input');
+    input.type = 'text'; input.value = cat.label;
+    input.style.cssText = 'flex:1; padding:8px 10px; border:1px solid var(--red); border-radius:6px; font-size:14px;';
+    const saveBtn = document.createElement('button'); saveBtn.className='btn-primary'; saveBtn.textContent='Save'; saveBtn.style.flex='0 0 auto'; saveBtn.style.padding='8px 14px';
+    manageRow.appendChild(input); manageRow.appendChild(saveBtn);
+    saveBtn.addEventListener('click', async () => {
+      const val = input.value.trim();
+      if(!val) return;
+      cat.label = val;
+      souvCategories.sort((a, b) => a.label.localeCompare(b.label));
+      await setStore('souvenirs:categories', souvCategories);
+      renderSouvCatTabs(); renderSouvCatPanel();
+    });
+  });
+
+  let confirmingDelete = false, delTimer = null;
+  deleteBtn.addEventListener('click', async () => {
+    if(!confirmingDelete){
+      confirmingDelete = true; deleteBtn.textContent = 'confirm delete?';
+      delTimer = setTimeout(() => { confirmingDelete=false; deleteBtn.textContent='delete person'; }, 2800);
+      return;
+    }
+    clearTimeout(delTimer);
+    souvCategories = souvCategories.filter(c => c.slug !== cat.slug);
+    await setStore('souvenirs:categories', souvCategories);
+    selectedSouvCatSlug = souvCategories.length > 0 ? souvCategories[0].slug : null;
+    renderSouvCatTabs(); renderSouvCatPanel();
+  });
+
+  const listEl = document.createElement('div');
+  panel.appendChild(listEl);
+
+  const items = await getStore(souvItemsKey(cat.slug), DEFAULT_SOUV_ITEMS[cat.slug] || []);
+  if(items.length === 0){
+    const empty = document.createElement('div'); empty.className='empty-state';
+    empty.textContent = 'No souvenirs here yet, add one below.';
+    listEl.appendChild(empty);
+  } else {
+    items.forEach(item => {
+      listEl.appendChild(buildEditableCard(item, {
+        noAddress: true,
+        showStamp: true,
+        stampOn: !!item.bought,
+        onToggleStamp: async () => {
+          item.bought = !item.bought;
+          await setStore(souvItemsKey(cat.slug), items);
+          renderSouvCatPanel();
+        },
+        onSave: async () => { await setStore(souvItemsKey(cat.slug), items); },
+        onDelete: async () => {
+          const updated = items.filter(i => i.id !== item.id);
+          await setStore(souvItemsKey(cat.slug), updated);
+          renderSouvCatPanel();
+        }
+      }));
+    });
+  }
+
+  const addTrigger = document.createElement('button');
+  addTrigger.className = 'add-trigger';
+  addTrigger.textContent = `+ Add a souvenir for ${cat.label}`;
+  const addForm = document.createElement('div');
+  addForm.className = 'edit-card'; addForm.style.display = 'none';
+  addForm.innerHTML = '<input type="text" placeholder="Item name" data-f-name>' +
+    '<textarea placeholder="Note (optional, size, color, etc.)" data-f-note></textarea>' +
+    '<div class="row"><button class="btn-primary" data-f-save>Save</button><button class="btn-ghost" data-f-cancel>Cancel</button></div>';
+  panel.appendChild(addTrigger);
+  panel.appendChild(addForm);
+
+  addTrigger.addEventListener('click', () => { addForm.style.display='block'; addTrigger.style.display='none'; });
+  addForm.querySelector('[data-f-cancel]').addEventListener('click', () => {
+    addForm.style.display='none'; addTrigger.style.display='block';
+    addForm.querySelectorAll('input,textarea').forEach(el => el.value='');
+  });
+  addForm.querySelector('[data-f-save]').addEventListener('click', async () => {
+    const name = addForm.querySelector('[data-f-name]').value.trim();
+    const note = addForm.querySelector('[data-f-note]').value.trim();
+    if(!name) return;
+    items.push({ id: uid(), name, note, bought: false });
+    await setStore(souvItemsKey(cat.slug), items);
+    addForm.querySelectorAll('input,textarea').forEach(el => el.value='');
+    renderSouvCatPanel();
+  });
+
+  souvCatPanelsEl.appendChild(panel);
+}
+
+/* =========================================================
+   CURRENCY CONVERTER
+   ========================================================= */
+let currentRate = 158.7;
+let currencyUpdating = false;
+
+function updateRateDisplay(updatedAt, errorMsg){
+  const el = document.getElementById('currencyRateDisplay');
+  if(errorMsg){
+    el.textContent = `1 USD = \u00a5${currentRate.toFixed(2)} (offline - couldn't refresh, using saved rate)`;
+    return;
+  }
+  const dateStr = updatedAt ? new Date(updatedAt).toLocaleDateString() : 'not fetched yet, using default';
+  el.textContent = `1 USD = \u00a5${currentRate.toFixed(2)} (as of ${dateStr})`;
+}
+
+async function initCurrency(){
+  const savedRate = await getStore('currency:rate', '158.7');
+  currentRate = parseFloat(savedRate) || 158.7;
+  let updatedAt = null;
+  try{ updatedAt = (await STORAGE.get('currency:updatedAt')).value; }catch(e){}
+  updateRateDisplay(updatedAt);
+  // try a silent background refresh, non-blocking
+  fetchLiveRate(true);
+}
+
+async function fetchLiveRate(silent){
+  const btn = document.getElementById('refreshRateBtn');
+  if(!silent) btn.textContent = '\u21bb Fetching...';
+  try{
+    const res = await fetch('https://api.frankfurter.app/latest?from=USD&to=JPY');
+    const data = await res.json();
+    if(data && data.rates && data.rates.JPY){
+      currentRate = data.rates.JPY;
+      const now = new Date().toISOString();
+      await setStore('currency:rate', String(currentRate));
+      await setStore('currency:updatedAt', now);
+      updateRateDisplay(now);
+      recalcFromYen();
+    }
+  }catch(e){
+    if(!silent) updateRateDisplay(null, true);
+  }
+  if(!silent) btn.textContent = '\u21bb Refresh Rate';
+}
+
+document.getElementById('refreshRateBtn').addEventListener('click', () => fetchLiveRate(false));
+
+document.getElementById('editRateBtn').addEventListener('click', () => {
+  document.getElementById('manualRateInput').value = currentRate;
+  document.getElementById('editRateForm').style.display = 'block';
+});
+document.getElementById('cancelRateBtn').addEventListener('click', () => {
+  document.getElementById('editRateForm').style.display = 'none';
+});
+document.getElementById('saveRateBtn').addEventListener('click', async () => {
+  const val = parseFloat(document.getElementById('manualRateInput').value);
+  if(!val || val <= 0) return;
+  currentRate = val;
+  const now = new Date().toISOString();
+  await setStore('currency:rate', String(currentRate));
+  await setStore('currency:updatedAt', now);
+  updateRateDisplay(now);
+  document.getElementById('editRateForm').style.display = 'none';
+  recalcFromYen();
+});
+
+const yenInput = document.getElementById('yenInput');
+const usdInput = document.getElementById('usdInput');
+
+function recalcFromYen(){
+  if(currencyUpdating) return;
+  currencyUpdating = true;
+  const yen = parseFloat(yenInput.value);
+  usdInput.value = isNaN(yen) ? '' : (yen / currentRate).toFixed(2);
+  currencyUpdating = false;
+}
+function recalcFromUsd(){
+  if(currencyUpdating) return;
+  currencyUpdating = true;
+  const usd = parseFloat(usdInput.value);
+  yenInput.value = isNaN(usd) ? '' : (usd * currentRate).toFixed(0);
+  currencyUpdating = false;
+}
+yenInput.addEventListener('input', recalcFromYen);
+usdInput.addEventListener('input', recalcFromUsd);
+
+/* =========================================================
+   PHRASES
+   ========================================================= */
+const DEFAULT_PHRASE_CATEGORIES = [
+  { slug:'courtesy', label:'Courtesy' },
+  { slug:'restaurants', label:'Restaurants' },
+  { slug:'shopping', label:'Shopping' },
+  { slug:'directions', label:'Directions & Transit' },
+  { slug:'emergency', label:'Emergency' },
+  { slug:'numbers', label:'Numbers & Money' }
+];
+
+const DEFAULT_PHRASES = {
+  courtesy: [
+    { id:uid(), name:'Hello', note:'\u3053\u3093\u306b\u3061\u306f — Konnichiwa' },
+    { id:uid(), name:'Good morning', note:'\u304a\u306f\u3088\u3046\u3054\u3056\u3044\u307e\u3059 — Ohayou gozaimasu' },
+    { id:uid(), name:'Thank you', note:'\u3042\u308a\u304c\u3068\u3046\u3054\u3056\u3044\u307e\u3059 — Arigatou gozaimasu' },
+    { id:uid(), name:'Excuse me / Sorry', note:'\u3059\u307f\u307e\u305b\u3093 — Sumimasen' },
+    { id:uid(), name:'Yes / No', note:'\u306f\u3044 / \u3044\u3044\u3048 — Hai / Iie' },
+    { id:uid(), name:'Please', note:'\u304a\u9858\u3044\u3057\u307e\u3059 — Onegaishimasu' },
+    { id:uid(), name:'Nice to meet you', note:'\u306f\u3058\u3081\u307e\u3057\u3066 — Hajimemashite' },
+    { id:uid(), name:'Do you speak English?', note:'\u82f1\u8a9e\u3092\u8a71\u305b\u307e\u3059\u304b\uff1f — Eigo wo hanasemasu ka?' }
+  ],
+  restaurants: [
+    { id:uid(), name:'Table for [number], please', note:'[\u6570\u5b57]\u540d\u3067\u3059 — [number]-mei desu' },
+    { id:uid(), name:'Check, please', note:'\u304a\u4f1a\u8a08\u304a\u9858\u3044\u3057\u307e\u3059 — Okaikei onegaishimasu' },
+    { id:uid(), name:'Is this spicy?', note:'\u8f9b\u3044\u3067\u3059\u304b\uff1f — Karai desu ka?' },
+    { id:uid(), name:'For here or to go?', note:'\u3053\u3061\u3089\u3067\u53ec\u3057\u4e0a\u304c\u308a\u307e\u3059\u304b\u3001\u304a\u6301\u3061\u5e30\u308a\u3067\u3059\u304b\uff1f — Kochira de meshiagarimasu ka, omochikaeri desu ka?' },
+    { id:uid(), name:'One of these, please', note:'\u3053\u308c\u3092\u4e00\u3064\u304f\u3060\u3055\u3044 — Kore wo hitotsu kudasai' },
+    { id:uid(), name:'Delicious', note:'\u7f8e\u5473\u3057\u3044 — Oishii' },
+    { id:uid(), name:'That was a feast (said after eating)', note:'\u3054\u99b3\u8d70\u69d8\u3067\u3057\u305f — Gochisousama deshita' },
+    { id:uid(), name:'Cheers', note:'\u4e7e\u676f — Kanpai' }
+  ],
+  shopping: [
+    { id:uid(), name:'How much is this?', note:'\u3053\u308c\u306f\u3044\u304f\u3089\u3067\u3059\u304b\uff1f — Kore wa ikura desu ka?' },
+    { id:uid(), name:'Do you have a bigger/smaller size?', note:'\u3082\u3063\u3068\u5927\u304d\u3044/\u5c0f\u3055\u3044\u30b5\u30a4\u30ba\u306f\u3042\u308a\u307e\u3059\u304b\uff1f — Motto ookii/chiisai saizu wa arimasu ka?' },
+    { id:uid(), name:'Is this tax-free?', note:'\u514d\u7a0e\u3067\u304d\u307e\u3059\u304b\uff1f — Menzei dekimasu ka?' },
+    { id:uid(), name:'Can I pay by card?', note:'\u30ab\u30fc\u30c9\u3067\u6255\u3048\u307e\u3059\u304b\uff1f — Kaado de haraemasu ka?' },
+    { id:uid(), name:'Just looking, thanks', note:'\u898b\u3066\u3044\u308b\u3060\u3051\u3067\u3059 — Miteiru dake desu' },
+    { id:uid(), name:'I will take this', note:'\u3053\u308c\u3092\u304f\u3060\u3055\u3044 — Kore wo kudasai' }
+  ],
+  directions: [
+    { id:uid(), name:'Where is [place]?', note:'[\u5834\u6240]\u306f\u3069\u3053\u3067\u3059\u304b\uff1f — [place] wa doko desu ka?' },
+    { id:uid(), name:'Does this train go to [place]?', note:'\u3053\u306e\u96fb\u8eca\u306f[\u5834\u6240]\u306b\u884c\u304d\u307e\u3059\u304b\uff1f — Kono densha wa [place] ni ikimasu ka?' },
+    { id:uid(), name:'Which platform?', note:'\u4f55\u756a\u30db\u30fc\u30e0\u3067\u3059\u304b\uff1f — Nanban hoomu desu ka?' },
+    { id:uid(), name:'How do I get to [place]?', note:'[\u5834\u6240]\u3078\u306f\u3069\u3046\u884c\u3051\u3070\u3044\u3044\u3067\u3059\u304b\uff1f — [place] e wa dou ikeba ii desu ka?' },
+    { id:uid(), name:'Straight ahead / Left / Right', note:'\u307e\u3063\u3059\u3050 / \u5de6 / \u53f3 — Massugu / Hidari / Migi' },
+    { id:uid(), name:'Is it far?', note:'\u9060\u3044\u3067\u3059\u304b\uff1f — Tooi desu ka?' }
+  ],
+  emergency: [
+    { id:uid(), name:'Help!', note:'\u52a9\u3051\u3066\uff01 — Tasukete!' },
+    { id:uid(), name:'I need a hospital', note:'\u75c5\u9662\u304c\u5fc5\u8981\u3067\u3059 — Byouin ga hitsuyou desu' },
+    { id:uid(), name:'Please call the police', note:'\u8b66\u5bdf\u3092\u547c\u3093\u3067\u304f\u3060\u3055\u3044 — Keisatsu wo yonde kudasai' },
+    { id:uid(), name:'I am lost', note:'\u8ff7\u3044\u307e\u3057\u305f — Mayoimashita' },
+    { id:uid(), name:'I lost my passport', note:'\u30d1\u30b9\u30dd\u30fc\u30c8\u3092\u306a\u304f\u3057\u307e\u3057\u305f — Pasupooto wo nakushimashita' },
+    { id:uid(), name:'Where is the bathroom?', note:'\u30c8\u30a4\u30ec\u306f\u3069\u3053\u3067\u3059\u304b\uff1f — Toire wa doko desu ka?' }
+  ],
+  numbers: [
+    { id:uid(), name:'One / Two / Three', note:'\u4e00 / \u4e8c / \u4e09 — Ichi / Ni / San' },
+    { id:uid(), name:'Four / Five', note:'\u56db / \u4e94 — Yon / Go' },
+    { id:uid(), name:'Ten / Hundred / Thousand', note:'\u5341 / \u767e / \u5343 — Juu / Hyaku / Sen' },
+    { id:uid(), name:'Ten thousand (the \u00a510,000 note)', note:'\u4e00\u4e07 — Ichiman' },
+    { id:uid(), name:'Cash only?', note:'\u73fe\u91d1\u306e\u307f\u3067\u3059\u304b\uff1f — Genkin nomi desu ka?' }
+  ]
+};
+
+const phraseCatTabsEl = document.getElementById('phraseCatTabs');
+const phraseCatPanelsEl = document.getElementById('phraseCatPanels');
+let phraseCategories = [];
+let selectedPhraseCatSlug = null;
+
+function phraseItemsKey(slug){ return `phrase-items:${slug}`; }
+
+async function loadPhraseCategories(){
+  phraseCategories = await getStore('phrases:categories', DEFAULT_PHRASE_CATEGORIES);
+  if(selectedPhraseCatSlug === null && phraseCategories.length > 0){
+    selectedPhraseCatSlug = phraseCategories[0].slug;
+  }
+}
+
+function renderPhraseCatTabs(){
+  phraseCatTabsEl.innerHTML = '';
+  phraseCategories.forEach(cat => {
+    const tab = document.createElement('div');
+    tab.className = 'cat-tab' + (cat.slug===selectedPhraseCatSlug ? ' active' : '');
+    tab.textContent = cat.label;
+    tab.addEventListener('click', () => { selectedPhraseCatSlug = cat.slug; renderPhraseCatTabs(); renderPhraseCatPanel(); });
+    phraseCatTabsEl.appendChild(tab);
+  });
+  const addTab = document.createElement('div');
+  addTab.className = 'cat-tab add-new';
+  addTab.textContent = '+ New';
+  addTab.addEventListener('click', () => { document.getElementById('phraseCatAddForm').style.display = 'block'; });
+  phraseCatTabsEl.appendChild(addTab);
+}
+
+document.querySelector('#phraseCatAddForm [data-phrasecat-cancel]').addEventListener('click', () => {
+  document.getElementById('phraseCatAddForm').style.display = 'none';
+  document.querySelector('#phraseCatAddForm [data-phrasecat-name]').value = '';
+});
+document.querySelector('#phraseCatAddForm [data-phrasecat-save]').addEventListener('click', async () => {
+  const nameInput = document.querySelector('#phraseCatAddForm [data-phrasecat-name]');
+  const label = nameInput.value.trim();
+  if(!label) return;
+  const slug = slugify(label) + '-' + uid().slice(0,4);
+  phraseCategories.push({ slug, label });
+  await setStore('phrases:categories', phraseCategories);
+  nameInput.value = '';
+  document.getElementById('phraseCatAddForm').style.display = 'none';
+  selectedPhraseCatSlug = slug;
+  renderPhraseCatTabs(); renderPhraseCatPanel();
+});
+
+async function renderPhraseCatPanel(){
+  phraseCatPanelsEl.innerHTML = '';
+  if(phraseCategories.length === 0) return;
+  const cat = phraseCategories.find(c => c.slug === selectedPhraseCatSlug) || phraseCategories[0];
+  const panel = document.createElement('div');
+  panel.className = 'cat-panel active';
+
+  const manageRow = document.createElement('div');
+  manageRow.className = 'cat-manage';
+  const heading = document.createElement('div');
+  heading.className = 'cat-heading'; heading.textContent = cat.label;
+  const renameBtn = document.createElement('button');
+  renameBtn.className = 'icon-btn'; renameBtn.textContent = 'rename';
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'icon-btn danger'; deleteBtn.textContent = 'delete category';
+  manageRow.appendChild(heading); manageRow.appendChild(renameBtn); manageRow.appendChild(deleteBtn);
+  panel.appendChild(manageRow);
+
+  renameBtn.addEventListener('click', () => {
+    manageRow.innerHTML = '';
+    const input = document.createElement('input');
+    input.type = 'text'; input.value = cat.label;
+    input.style.cssText = 'flex:1; padding:8px 10px; border:1px solid var(--red); border-radius:6px; font-size:14px;';
+    const saveBtn = document.createElement('button'); saveBtn.className='btn-primary'; saveBtn.textContent='Save'; saveBtn.style.flex='0 0 auto'; saveBtn.style.padding='8px 14px';
+    manageRow.appendChild(input); manageRow.appendChild(saveBtn);
+    saveBtn.addEventListener('click', async () => {
+      const val = input.value.trim();
+      if(!val) return;
+      cat.label = val;
+      await setStore('phrases:categories', phraseCategories);
+      renderPhraseCatTabs(); renderPhraseCatPanel();
+    });
+  });
+
+  let confirmingDelete = false, delTimer = null;
+  deleteBtn.addEventListener('click', async () => {
+    if(!confirmingDelete){
+      confirmingDelete = true; deleteBtn.textContent = 'confirm delete?';
+      delTimer = setTimeout(() => { confirmingDelete=false; deleteBtn.textContent='delete category'; }, 2800);
+      return;
+    }
+    clearTimeout(delTimer);
+    phraseCategories = phraseCategories.filter(c => c.slug !== cat.slug);
+    await setStore('phrases:categories', phraseCategories);
+    selectedPhraseCatSlug = phraseCategories.length > 0 ? phraseCategories[0].slug : null;
+    renderPhraseCatTabs(); renderPhraseCatPanel();
+  });
+
+  const listEl = document.createElement('div');
+  panel.appendChild(listEl);
+
+  const items = await getStore(phraseItemsKey(cat.slug), DEFAULT_PHRASES[cat.slug] || []);
+  if(items.length === 0){
+    const empty = document.createElement('div'); empty.className='empty-state';
+    empty.textContent = 'No phrases here yet, add one below.';
+    listEl.appendChild(empty);
+  } else {
+    items.forEach(item => {
+      listEl.appendChild(buildEditableCard(item, {
+        noAddress: true,
+        onSave: async () => { await setStore(phraseItemsKey(cat.slug), items); },
+        onDelete: async () => {
+          const updated = items.filter(i => i.id !== item.id);
+          await setStore(phraseItemsKey(cat.slug), updated);
+          renderPhraseCatPanel();
+        }
+      }));
+    });
+  }
+
+  const addTrigger = document.createElement('button');
+  addTrigger.className = 'add-trigger';
+  addTrigger.textContent = `+ Add a phrase to ${cat.label}`;
+  const addForm = document.createElement('div');
+  addForm.className = 'edit-card'; addForm.style.display = 'none';
+  addForm.innerHTML = '<input type="text" placeholder="English phrase" data-f-name>' +
+    '<textarea placeholder="Japanese — Romaji" data-f-note></textarea>' +
+    '<div class="row"><button class="btn-primary" data-f-save>Save</button><button class="btn-ghost" data-f-cancel>Cancel</button></div>';
+  panel.appendChild(addTrigger);
+  panel.appendChild(addForm);
+
+  addTrigger.addEventListener('click', () => { addForm.style.display='block'; addTrigger.style.display='none'; });
+  addForm.querySelector('[data-f-cancel]').addEventListener('click', () => {
+    addForm.style.display='none'; addTrigger.style.display='block';
+    addForm.querySelectorAll('input,textarea').forEach(el => el.value='');
+  });
+  addForm.querySelector('[data-f-save]').addEventListener('click', async () => {
+    const name = addForm.querySelector('[data-f-name]').value.trim();
+    const note = addForm.querySelector('[data-f-note]').value.trim();
+    if(!name) return;
+    items.push({ id: uid(), name, note });
+    await setStore(phraseItemsKey(cat.slug), items);
+    addForm.querySelectorAll('input,textarea').forEach(el => el.value='');
+    renderPhraseCatPanel();
+  });
+
+  phraseCatPanelsEl.appendChild(panel);
+}
+
 async function boot(){
+  await initCurrency();
+
   renderHotels();
 
   for(let i = 0; i < dayPanels.length; i++){
@@ -809,6 +1611,14 @@ async function boot(){
   await loadCategories();
   renderCatTabs();
   renderCatPanel();
+
+  await loadSouvCategories();
+  renderSouvCatTabs();
+  renderSouvCatPanel();
+
+  await loadPhraseCategories();
+  renderPhraseCatTabs();
+  renderPhraseCatPanel();
 
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(() => {});
